@@ -31,3 +31,16 @@ kubectl apply -f xrd.yml
 kubectl apply -f xr.yml
 kubectl apply -f xrc.yml
 ```
+
+Testing
+```bash
+kubectl get pods -n <NAME PARAMETER>
+NAME               READY   STATUS    RESTARTS   AGE
+crossplane-apply   1/1     Running   0          61m
+nginx              1/1     Running   0          60m
+```
+
+```bash
+kubectl port-forward -n <NAME PARAMETER> pod/nginx 8080:80
+curl localhost:8080
+```
