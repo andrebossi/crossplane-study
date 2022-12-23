@@ -1,0 +1,60 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: nscomposition
+  labels:
+    crossplane.io/xrd: xnamespacepods.example.org
+    provider: provider-kubernetes
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: example.org/v1alpha1
+    kind: XNameSpacePod
+  resources:
+  - name: namespace
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: v1
+            kind: Namespace
+            metadata:
+              labels:
+                example: "true"
+        providerConfigRef:
+          name: kubernetes-provider
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.name
+      toFieldPath: spec.forProvider.manifest.metadata.name
+  - name: pod
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              name: nginx
+              labels:
+                example: "true"
+                app: nginx
+            spec:
+              containers:
+              - name: nginx
+                image: nginx:1.23-alpine
+                ports:
+                - containerPort: 80
+        providerConfigRef:
+          name: kubernetes-provider
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.name
+      toFieldPath: spec.forProvider.manifest.metadata.namespace
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.name
+      toFieldPath: metadata.annotations.crossplane.io/external-name
